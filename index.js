@@ -1,16 +1,16 @@
 const express = require("express");
 const app = express();
 const dotenv = require("dotenv").config();
-const PORT = process.env.PORT || 4000;
 const connectDB = require("./config/dbConnect")
 const authRouter = require("./routes/authRoute")
+const {notFound, errorHandler} = require("./middlewares/errorHandler")
+const bodyParser = ("body-parser")
 
-app.use("/", (req, res) => {
-    res.send("hello world");
 
-})
-
-app.use("api/user", authRouter)
+app.use(express.json());
+app.use("/api/user", authRouter)
+app.use(notFound)
+app.use(errorHandler);
 
 port = process.env.PORT || 4000;
 
