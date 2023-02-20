@@ -30,6 +30,27 @@ var userSchema = new mongoose.Schema({
         type:String,
         default: "user"
     },
+    isBlocked:{
+        type:Boolean,
+        default:false,
+
+    },
+    cart:{
+        type:Array,
+        default: [],
+    },
+    address:[{
+        type:mongoose.Types.ObjectId,
+        ref: "Address"
+    }],
+    wishList:[
+        {
+            type:mongoose.Types.ObjectId,
+            ref: "Product"
+        },
+    ],
+}, {
+    timestamps:true,
 });
 
 
@@ -39,7 +60,7 @@ userSchema.pre('save', async function(){
 })
 
 userSchema.methods.createJWT = function () {
-    return jwt.sign({userId:this._id, name:this.firstName}, process.env.JWT_SECRET, {expiresIn: process.env.JWT_LIFETIME,})
+    return jwt.sign({userId:this._id, name:this.firstName+this.lastName}, process.env.JWT_SECRET, {expiresIn: process.env.JWT_LIFETIME,})
 }
 
 userSchema.methods.isPasswordMatched = async function (enteredPassword) {
