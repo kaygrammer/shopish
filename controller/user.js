@@ -76,6 +76,35 @@ const handleRefreshToken = asyncHandler(async (req, res) => {
     });
   });
   
+// logout functionality
+
+const logout = asyncHandler(async(req,res)=>{
+    const cookie = req.cookies;
+    if (!cookie?.refreshToken){
+    throw new Error("No Refresh Token in Cookies")
+};
+    const refreshToken = cookie.refreshToken;
+    const user = await User.findOne({ refreshToken });
+    if (!user) {
+        res.clearCookie("refreshToken", {
+            httpOnly:true,
+            secure:true,
+        });
+        return res.status(204).json("forbidden request")//forbidden
+    };
+    await User.findOneAndUpdate(refreshToken, {
+        refreshToken: "",
+    });
+    res.clearCookie("refreshToken", {
+        httpOnly:true,
+        secure:true,
+    });
+    return res.status(200).json({message:"log out successful"})//forbidden
+    
+
+})
+
+
 // get all users
 const getalluser = (asyncHandler(async (req, res) =>{
     try{
@@ -213,4 +242,4 @@ const test =  asyncHandler(async(req, res)=>{
     console.log("testing");
 })
 
-module.exports = {createUser, login, getalluser, getAUser, deleteAUser, updateUser, blockUser, unblockUser, handleRefreshToken, test}
+module.exports = {createUser, login, getalluser, getAUser, deleteAUser, updateUser, blockUser, unblockUser, handleRefreshToken, logout, test}
