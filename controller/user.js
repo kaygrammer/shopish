@@ -1,6 +1,9 @@
 const User = require("../models/userModel")
 const asyncHandler = require("express-async-handler")
 const validateMongoDbId = require("../utils/validateMongodbid")
+const {generateRefreshToken} = require("../config/refreshToken")
+const {generateToken} = require("../config/jwtToken")
+const jwt = require("jsonwebtoken");
 
 
 
@@ -42,9 +45,37 @@ const login = asyncHandler (async (req, res) =>{
         throw new Error('invalid credentials')
     }
     const token = user.createJWT();
-    res.status(200).json({ user: {name: user.firstName}, token})
+    const refreshToken = await generateRefreshToken(user?.id);
+    const updateuser = await User.findByIdAndUpdate(user.id, {
+         refreshToken: refreshToken
+     },
+     {new: true})
+     console.log(updateuser);
+     res.cookie('refreshToken', refreshToken,{
+     httpOnly:true,
+     maxAge:72*60*60*1000,})
+    res.status(201).json({ user: {name: user.firstName}, token})
 });
 
+
+// handle refresh token
+const handleRefreshToken = asyncHandler(async (req, res) => {
+    const cookie = req.cookies;
+    if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
+    const refreshToken = cookie.refreshToken;
+    const user = await User.findOne({ refreshToken });
+    if (!user) {
+        throw new Error(" No Refresh token present in db or not matched")
+    };
+    jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+      if (err || user.id !== decoded.id) {
+        throw new Error("There is something wrong with refresh token");
+      }
+      const accessToken = generateToken(user?.id);
+      res.status(200).json({ accessToken });
+    });
+  });
+  
 // get all users
 const getalluser = (asyncHandler(async (req, res) =>{
     try{
@@ -177,4 +208,9 @@ const unblockUser = asyncHandler(async(req,res)=>{
     }    
 })
 
-module.exports = {createUser, login, getalluser, getAUser, deleteAUser, updateUser, blockUser, unblockUser}
+const test =  asyncHandler(async(req, res)=>{
+    res.send("testing");
+    console.log("testing");
+})
+
+module.exports = {createUser, login, getalluser, getAUser, deleteAUser, updateUser, blockUser, unblockUser, handleRefreshToken, test}

@@ -25,7 +25,7 @@ const asyncHandler = require("express-async-handler");
 const isAdmin = asyncHandler(async(req, res, next)=>{
     const {email} = req.user;
     const adminUser = await User.findOne({email});
-    if (adminUser.role !== "Admin"){
+    if (adminUser.role.toLowerCase() !== "admin"){
         throw new Error("you are not an admin")
     }else{
      next();
