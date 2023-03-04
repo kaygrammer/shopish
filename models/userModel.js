@@ -1,6 +1,7 @@
 const mongoose = require('mongoose'); // Erase if already required
-const bcrypt = require("bcrypt")
-const jwt = require('jsonwebtoken')
+const bcrypt = require("bcrypt");
+const jwt = require('jsonwebtoken');
+const crypto = require("crypto");
 
 // Declare the Schema of the Mongo model
 var userSchema = new mongoose.Schema({
@@ -52,14 +53,21 @@ var userSchema = new mongoose.Schema({
     refreshToken:{
         type: String,
     },
+    passwordChangedAt: Date,
+    passwordResetToken: String,
+    passwordResetExpires: Date,
 }, {
     timestamps:true,
 });
 
 
-userSchema.pre('save', async function(){
+userSchema.pre('save', async function(next){
+    if(!this.isModified('password')){
+        next();
+    }
     const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt)
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
 })
 
 userSchema.methods.createJWT = function () {
@@ -70,17 +78,15 @@ userSchema.methods.isPasswordMatched = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 }
 
-// userSchema.pre("save", async function (next) {
-//     if (!this.isModified("password")) {
-//       next();
-//     }
-//     const salt = await bcrypt.genSaltSync(10);
-//     this.password = await bcrypt.hash(this.password, salt);
-//     next();
-//   });
-//   userSchema.methods.isPasswordMatched = async function (enteredPassword) {
-//     return await bcrypt.compare(enteredPassword, this.password);
-//   };
+userSchema.methods.createPasswordResetToken = async function (){
+    const resettoken = crypto.randomBytes(32).toString("hex");
+    this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resettoken)
+    .digest("hex");
+    this.passwordResetExpires = Date.now()+30*60*1000; // 10 minutes
+    return resettoken;
+};
 
 
 //Export the model
