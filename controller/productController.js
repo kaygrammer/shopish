@@ -107,7 +107,7 @@ const updateProduct = asyncHandler(async(req, res)=>{
                 updateProduct
             })
     }catch(error){
-
+        res.status(500).json(error);
     }
 })
 
@@ -122,7 +122,7 @@ const deleteProduct = asyncHandler(async(req, res)=>{
                 
             })
     }catch(error){
-
+        res.status(500).json(error);
     }
 })
 
