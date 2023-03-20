@@ -46,7 +46,7 @@ var userSchema = new mongoose.Schema({
     }],
     wishList:[
         {
-            type:mongoose.Types.ObjectId,
+            type:mongoose.Schema.Types.ObjectId,
             ref: "Product"
         },
     ],

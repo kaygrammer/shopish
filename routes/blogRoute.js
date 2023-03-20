@@ -1,5 +1,5 @@
 const express = require("express")
-const {createBlog, updateBlog, fetchBlog, fetchSingleBlog, deleteBlog, likeBlog} = require("../controller/blogController")
+const {createBlog, updateBlog, fetchBlog, fetchSingleBlog, deleteBlog, likeBlog, dislikeBlog} = require("../controller/blogController")
 const {authmiddleware, isAdmin} = require("../middlewares/authMiddleware")
 const router = express.Router()
 
@@ -9,5 +9,6 @@ router.get('/', fetchBlog);
 router.get('/single-blog/:id', fetchSingleBlog);
 router.delete('/delete/:id', deleteBlog);
 router.put('/likes', authmiddleware, likeBlog);
+router.put('/dislikes', authmiddleware, dislikeBlog);
 
 module.exports = router;

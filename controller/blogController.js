@@ -32,11 +32,11 @@ const fetchSingleBlog = asyncHandler(async (req, res)=>{
     const {id} = req.params
     validateMongoDbId(id)
     try{
-        const blog = await Blog.findById(id)
+        const blog = await Blog.findById(id).populate("likes").populate("disLikes")
         const updatedBlog = await Blog.findByIdAndUpdate(id, {
             $inc:{numView:1} 
         }, {new:true});
-        res.status(200).json({updatedBlog});
+        res.status(200).json({blog});
     }catch(error){
         res.status(500).json(error);
     }
@@ -120,4 +120,59 @@ const likeBlog = asyncHandler(async (req, res)=>{
     }
 })
 
-module.exports = {createBlog, updateBlog, fetchBlog, fetchSingleBlog, deleteBlog, likeBlog};
+const dislikeBlog = asyncHandler(async (req, res)=>{
+    const {blogId} = req.body;
+    validateMongoDbId(blogId)
+    try{
+    //Find the blog which you want to be disliked
+    const blog = await Blog.findById(blogId);
+    // find the logined user
+    const loginUserId = req?.user?._id;
+    // find if the user has disliked the blog
+    const isDisliked = blog?.isDisLiked;
+    // find if the user has liked the blog
+    const alreadyLiked = blog?.likes?.find(
+        (userId) => userId?.toString() === loginUserId?.toString())
+    ;
+    if (alreadyLiked){
+        const blog = await Blog.findByIdAndUpdate(
+            blogId,
+            {
+                $pull: {likes: loginUserId},
+                isLiked: false,
+            },
+            {
+                new:true
+            }
+        );
+        res.json(blog)
+    }
+    if (isDisliked){
+        const blog = await Blog.findByIdAndUpdate(
+            blogId,
+            {
+                $pull: {disLikes: loginUserId},
+                isDisLiked: false,
+            },
+            {
+                new:true
+            }
+        );
+        res.json(blog)
+    }else{
+        const blog = await Blog.findByIdAndUpdate(
+            blogId,
+            {
+                $push: {disLikes: loginUserId},
+                isDisLiked: true
+            },
+            {new: true}
+        )
+        res.json(blog)
+    }}catch(error){
+        res.status(500).json(error);
+    }
+})
+
+
+module.exports = {createBlog, updateBlog, fetchBlog, fetchSingleBlog, deleteBlog, likeBlog, dislikeBlog};
