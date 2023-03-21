@@ -101,7 +101,7 @@ const logout = asyncHandler(async(req,res)=>{
         httpOnly:true,
         secure:true,
     });
-    return res.status(200).json({message:"log out successful"})//forbidden
+    return res.status(200).json({message:"log out successful"})
     
 
 })

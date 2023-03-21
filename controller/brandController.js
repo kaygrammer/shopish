@@ -2,7 +2,7 @@ const Brand = require("../models/brandModel")
 const asyncHandler = require("express-async-handler")
 const validateMongoDbId = require("../utils/validateMongodbid")
 
-
+0
 const createProductBrand =  asyncHandler(async(req, res)=>{
     try{
     const newBrand = await Brand.create(req.body);
@@ -23,7 +23,6 @@ const updateProductBrand =  asyncHandler(async(req, res)=>{
     res.status(500).json(error);
 }
 })
-
 
 const deleteProductBrand =  asyncHandler(async(req, res)=>{
     const {id} = req.params
