@@ -2,7 +2,8 @@ const Product = require("../models/productModel");
 const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler")
 const slugify = require("slugify");
-
+const validateMongoDbId = require("../utils/validateMongodbid");
+const cloudinaryuploading = require("../utils/cloudinary")
 
 const createProduct = asyncHandler(async(req, res)=>{
     try{
@@ -195,9 +196,33 @@ const rating = asyncHandler(async(req, res)=>{
 })
 
 
+const uploadImages = asyncHandler(async(req, res)=>{
+    const {id} = req.params;
+    validateMongoDbId(id)
+    try{
+        const uploader = (path)=> cloudinaryuploading(path, "images");
+        const urls = [];
+        const files = req.files
+        for (const file of files){
+            const {path}= file;
+            const newPath = await uploader(path);
+            urls.push(newPath);
+        }
+        const findProduct = await Product.findByIdAndUpdate(id, {images: urls.map((file)=>{
+            return file;
+        })}, {new:true})
+        res.json(findProduct)  
+    }
+    catch(error){
+        res.status(500).json(error);
+
+    }
+})
 
 
-module.exports = {createProduct, getAProduct, getAllProduct, updateProduct, deleteProduct, addToWishList, rating};
+
+
+module.exports = {createProduct, getAProduct, getAllProduct, updateProduct, deleteProduct, addToWishList, rating, uploadImages};
 
 
 // const { isValidObjectId } = require('mongoose');

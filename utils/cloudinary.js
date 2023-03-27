@@ -1,11 +1,11 @@
-const cloudinary = require("cloudinary").v2;
+const cloudinary = require("cloudinary");
 require('dotenv').config()
 
 
 cloudinary.config({
     cloud_name:process.env.CLOUDINARY_NAME,
-    api_key:CLOUDINARY_KEY,
-    api_secret:API_SECRET
+    api_key:process.env.CLOUDINARY_KEY,
+    api_secret:process.env.API_SECRET
 })
 
 
@@ -14,10 +14,10 @@ const cloudinaryuploading = async(fileToUploads) =>{
         cloudinary.uploader.upload(fileToUploads, (result)=>{
             resolve(
                 {
-                    url:result.secure_url,
+                    url: result.secure_url,
                 },
                 {
-                    resource_type: "auto"
+                    resource_type: "auto",
                 }
             )
         })
